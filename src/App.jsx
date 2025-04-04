@@ -7,7 +7,7 @@ export default function App() {
   const [started, setStarted] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
-  const [timeLeft, setTimeLeft] = useState(45); // Changed to 45 seconds per question
+  const [timeLeft, setTimeLeft] = useState(45);
   const [name, setName] = useState('');
   const [dept, setDept] = useState('');
   const [year, setYear] = useState('1st');
@@ -22,17 +22,18 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    let timer;
     if (started && timeLeft > 0) {
-      const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-      return () => clearInterval(timer);
+      timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
     } else if (timeLeft === 0 && started) {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
-        setTimeLeft(45); // Reset to 45 seconds for next question
+        setTimeLeft(45);
       } else {
         handleQuizEnd();
       }
     }
+    return () => clearInterval(timer);
   }, [started, timeLeft, currentQuestion]);
 
   const fetchLeaderboard = async () => {
@@ -54,15 +55,10 @@ export default function App() {
     newAnswers[currentQuestion] = answer;
     setAnswers(newAnswers);
     
-    const options = document.querySelectorAll('.option-btn');
-    options.forEach((opt, i) => {
-      opt.classList.toggle('selected', i === index);
-    });
-    
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
-        setTimeLeft(45); // Reset to 45 seconds for next question
+        setTimeLeft(45);
       } else {
         handleQuizEnd();
       }
@@ -77,6 +73,7 @@ export default function App() {
   };
 
   const handleSubmit = async () => {
+    if (submitted) return;
     if (!name.trim() || !dept.trim()) {
       setError("Please fill in all fields");
       return;
